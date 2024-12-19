@@ -27,7 +27,7 @@ fi
 mkdir -p "$OUTPUT_PATH"
 
 # Run the Docker command
-if docker run --rm -v "$(pwd)/${PROTO_PATH}:/protos" -v "$(pwd)/${OUTPUT_PATH}:/out" namely/protoc-all:1.44_1 \
+if docker run --rm -v "$(pwd)/${PROTO_PATH}:/protos" -v "$(pwd)/${OUTPUT_PATH}:/out" namely/protoc-all \
     -f "${PROTO_FILE}" \
     -l go \
     -o /out \
