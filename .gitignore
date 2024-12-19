@@ -15,7 +15,7 @@ go.sum
 .vscode/
 
 # Archivos generados por Protobuf
-*.pb.go
+# *.pb.go
 
 # Archivos de logs y otros temporales
 *.log
