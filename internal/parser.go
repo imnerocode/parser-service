@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bufio"
+	"encoding/binary"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	// Import generated proto package
 	proto "github.com/imnerocode/parser-service/proto/generated"
 	"github.com/oakmound/ofbx"
+	"github.com/qmuntal/gltf"
 )
 
 // ParseOBJ parses an OBJ file and returns a Model structure
@@ -103,4 +105,96 @@ func ParseFBX(filePath string) (*proto.Model, error) {
 	}
 
 	return model, nil
+}
+
+// ParseGLTF parses a GLTF or GLB file and returns a Model structure
+func ParseGLTF(filePath string) (*proto.Model, error) {
+	// Open the GLTF/GLB file
+	doc, err := gltf.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse GLTF/GLB file: %w", err)
+	}
+
+	// Initialize the Model structure
+	model := &proto.Model{
+		Vertices: []*proto.Vertex{},
+		Faces:    []*proto.Face{},
+	}
+
+	// Extract mesh data
+	for _, mesh := range doc.Meshes {
+		for _, primitive := range mesh.Primitives {
+			// Extract vertex positions
+			if positionAccessorIndex, ok := primitive.Attributes["POSITION"]; ok {
+				positionAccessor := doc.Accessors[positionAccessorIndex]
+				vertices, err := decodeFloat32Array(doc, positionAccessor)
+				if err != nil {
+					return nil, fmt.Errorf("failed to decode vertices: %w", err)
+				}
+
+				for i := 0; i < len(vertices); i += 3 {
+					model.Vertices = append(model.Vertices, &proto.Vertex{
+						X: vertices[i],
+						Y: vertices[i+1],
+						Z: vertices[i+2],
+					})
+				}
+			}
+
+			// Extract indices (faces)
+			if primitive.Indices != nil {
+				indicesAccessor := doc.Accessors[*primitive.Indices]
+				indices, err := decodeUint32Array(doc, indicesAccessor)
+				if err != nil {
+					return nil, fmt.Errorf("failed to decode indices: %w", err)
+				}
+
+				for i := 0; i < len(indices); i += 3 {
+					model.Faces = append(model.Faces, &proto.Face{
+						VertexIndices: []int32{
+							int32(indices[i]),
+							int32(indices[i+1]),
+							int32(indices[i+2]),
+						},
+					})
+				}
+			}
+		}
+	}
+
+	return model, nil
+}
+
+// decodeFloat32Array decodes a float32 array from an accessor
+func decodeFloat32Array(doc *gltf.Document, accessor *gltf.Accessor) ([]float32, error) {
+	if accessor.BufferView == nil {
+		return nil, fmt.Errorf("accessor has no BufferView")
+	}
+
+	bufferView := doc.BufferViews[*accessor.BufferView]
+	buffer := doc.Buffers[bufferView.Buffer]
+	data := buffer.Data[bufferView.ByteOffset : bufferView.ByteOffset+bufferView.ByteLength]
+
+	var result []float32
+	for i := 0; i < len(data); i += 4 {
+		result = append(result, float32(binary.LittleEndian.Uint32(data[i:i+4])))
+	}
+	return result, nil
+}
+
+// decodeUint32Array decodes a uint32 array from an accessor
+func decodeUint32Array(doc *gltf.Document, accessor *gltf.Accessor) ([]uint32, error) {
+	if accessor.BufferView == nil {
+		return nil, fmt.Errorf("accessor has no BufferView")
+	}
+
+	bufferView := doc.BufferViews[*accessor.BufferView]
+	buffer := doc.Buffers[bufferView.Buffer]
+	data := buffer.Data[bufferView.ByteOffset : bufferView.ByteOffset+bufferView.ByteLength]
+
+	var result []uint32
+	for i := 0; i < len(data); i += 4 {
+		result = append(result, binary.LittleEndian.Uint32(data[i:i+4]))
+	}
+	return result, nil
 }
