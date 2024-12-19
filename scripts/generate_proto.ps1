@@ -19,7 +19,7 @@ if (-Not (Test-Path $outputPath)) {
 
 # Run Docker command
 try {
-    docker run --rm -v "$(Get-Location)/${protoPath}:/protos" -v "$(Get-Location)/${outputPath}:/out" namely/protoc-all:1.44_1 `
+    docker run --rm -v "$(Get-Location)/${protoPath}:/protos" -v "$(Get-Location)/${outputPath}:/out" namely/protoc-all `
         -f "${protoFile}" `
         -l go `
         -o /out `
