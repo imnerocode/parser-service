@@ -1,0 +1,16 @@
+# Archivos de configuración y entornos locales
+.env
+.idea/
+.vscode/
+.DS_Store
+
+# Archivos generados y compilados
+/bin/
+*.exe
+*.out
+
+# Archivos de dependencias locales
+go.sum
+
+# Archivos generados por Protobuf
+*.pb.go

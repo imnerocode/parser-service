@@ -1,0 +1,22 @@
+# Archivos binarios y compilados
+/bin/
+*.exe
+*.out
+
+# Archivos de dependencias
+go.sum
+
+# Archivos de entorno
+.env
+
+# Archivos temporales y del sistema
+.DS_Store
+.idea/
+.vscode/
+
+# Archivos generados por Protobuf
+*.pb.go
+
+# Archivos de logs y otros temporales
+*.log
+/tmp/
