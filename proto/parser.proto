@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package parser;
+
+option go_package = "/;proto";
+
+service ModelParser {
+  // Receives a file and returns the parsed structure
+  rpc ParseModel(ParseRequest) returns (ParseResponse);
+}
+
+message ParseRequest {
+  bytes model_file = 1;       // Content of the 3D file
+  string file_format = 2;     // File format (e.g., OBJ, STL, FBX)
+}
+
+message ParseResponse {
+  Model model = 1;            // Parsed model data
+  string message = 2;         // Status message
+}
+
+message Model {
+  string id = 1;                      // Model identifier
+  repeated Vertex vertices = 2;       // List of vertices
+  repeated Face faces = 3;            // List of faces
+  repeated Material materials = 4;    // List of materials
+  repeated UV uv_coords = 5;          // UV coordinates
+  repeated Normal normals = 6;        // Model normals
+}
+
+message Vertex {
+  float x = 1; // X coordinate
+  float y = 2; // Y coordinate
+  float z = 3; // Z coordinate
+}
+
+message Face {
+  repeated int32 vertex_indices = 1;  // Indices of the vertices forming the face
+}
+
+message Material {
+  string name = 1;                   // Material name
+  string color = 2;                  // Material color (hex or rgba)
+  float specularity = 3;             // Specularity
+}
+
+message UV {
+  float u = 1; // U coordinate
+  float v = 2; // V coordinate
+}
+
+message Normal {
+  float nx = 1; // Normal X coordinate
+  float ny = 2; // Normal Y coordinate
+  float nz = 3; // Normal Z coordinate
+}
